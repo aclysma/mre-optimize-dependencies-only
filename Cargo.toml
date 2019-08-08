@@ -1,0 +1,35 @@
+cargo-features = ["profile-overrides"]
+
+[package]
+name = "mre-optimize-dependencies-only"
+version = "0.1.0"
+authors = ["Philip Degarmo <aclysma@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+nalgebra        = { version = "0.18", features = [ "sparse" ] }
+nalgebra-glm    = "0.4"
+nphysics2d      = "0.11"
+ncollide2d      = "0.19"
+
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+#[profile.dev.overrides.nalgebra]
+#opt-level = 3
+#
+#[profile.dev.overrides.nalgebra-glm]
+#opt-level = 3
+#
+#[profile.dev.overrides.nphysics2d]
+#opt-level = 3
+#
+#[profile.dev.overrides.ncollide2d]
+#opt-level = 3
+
+[profile.dev.overrides."*"]
+opt-level = 2
