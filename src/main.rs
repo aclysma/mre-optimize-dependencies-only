@@ -1,9 +1,8 @@
 
 extern crate nalgebra_glm as glm;
 
-
-fn main() {
-
+// This is identical to physics_shim::shim_create_world
+fn create_world() -> nphysics2d::world::World::<f32> {
     let position = glm::vec2(0.0, 0.0);
     let velocity = glm::vec2(10.0, 0.0);
     let mut world = nphysics2d::world::World::<f32>::new();
@@ -25,7 +24,7 @@ fn main() {
             .collision_groups(
                 ncollide2d::world::CollisionGroups::new()
                     .with_membership(&[0])
-                    .with_blacklist(&[0]),
+                    //.with_blacklist(&[0]),
             )
             .name("bullet".to_string());
 
@@ -37,18 +36,62 @@ fn main() {
             .name("bullet".to_string())
     };
 
-    for i in 0..100 {
+    for i in 0..1000 {
         body_desc.build(&mut world);
     }
 
+    world
+}
+
+fn main() {
+
+    // First, run the test from
+    println!("baseline, do everything in the shim");
+    physics_shim::shim_main();
+
+
+    println!("Test with a world created in main crate");
+    let mut world = create_world();
+    test_step_in_main("  test_step_in_main_world_from_main", &mut world);
+    test_step_in_shim("  test_step_in_shim_world_from_main", &mut world);
+    physics_shim::shim_test("  shim_test_from_main_world_from_main", &mut world);
+
+    println!("Now test with a world created in the shim");
+    let mut world = physics_shim::shim_create_world();
+    test_step_in_main("  test_step_in_main_world_from_shim", &mut world);
+    test_step_in_shim("  test_step_in_shim_world_from_shim", &mut world);
+    physics_shim::shim_test("  shim_test_from_main_world_from_shim", &mut world);
+
+}
+
+// This is identical to shim_test, except it calls step_world. But step_world is identical to shim_step_world.
+#[inline(never)]
+pub fn test_step_in_main(text: &'static str, world: &mut nphysics2d::world::World::<f32>) {
+    let mut total = 0;
     for i in 0..100 {
         let t0 = std::time::Instant::now();
-        world.step();
+        step_world(world);
         let t1 = std::time::Instant::now();
-        println!(
-            "update physics took {}us",
-            (t1 - t0).as_micros() as f64 / 1000.0
-        );
+        total += (t1 - t0).as_micros();
     }
+    println!("{} update physics took {}ms total", text, total as f64 / 1000.0);
+}
 
+// This is identical to shim_test
+#[inline(never)]
+pub fn test_step_in_shim(text: &'static str, world: &mut nphysics2d::world::World::<f32>) {
+    let mut total = 0;
+    for i in 0..100 {
+        let t0 = std::time::Instant::now();
+        physics_shim::shim_step_world(world);
+        let t1 = std::time::Instant::now();
+        total += (t1 - t0).as_micros();
+    }
+    println!("{} update physics took {}ms total", text, total as f64 / 1000.0);
+}
+
+// This is identical to shim_step_world
+#[inline(never)]
+pub fn step_world(world: &mut nphysics2d::world::World::<f32>) {
+    world.step();
 }

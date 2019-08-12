@@ -1,7 +1,5 @@
-cargo-features = ["profile-overrides"]
-
 [package]
-name = "mre-optimize-dependencies-only"
+name = "physics_shim"
 version = "0.1.0"
 authors = ["Philip Degarmo <aclysma@gmail.com>"]
 edition = "2018"
@@ -13,11 +11,3 @@ nalgebra        = { version = "0.18", features = [ "sparse" ] }
 nalgebra-glm    = "0.4"
 nphysics2d      = "0.11"
 ncollide2d      = "0.19"
-physics_shim    = { path = "physics_shim" }
-
-
-[profile.dev]
-opt-level = 0
-
-[profile.dev.overrides."*"]
-opt-level = 3
